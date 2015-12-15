@@ -98,6 +98,31 @@ public class Chapter1 {
         }
     }
 
+    static interface I {
+
+        default void f() {
+        }
+    ;
+
+    }
+
+    static interface J {
+
+        default void f() {
+            System.out.println("HE HE");
+        }
+    ;
+
+    }
+    
+    static class G implements I, J {
+
+        @Override
+        public void f() {
+
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
