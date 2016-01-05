@@ -19,21 +19,22 @@ import java.util.concurrent.Future;
  * @author Trung Pham
  */
 public class Chapter2 {
-    public int parallelForLoopWordCount(List<String> list , int processor) throws InterruptedException, ExecutionException{
-        if(processor <= 0){
+
+    public int parallelForLoopWordCount(List<String> list, int processor) throws InterruptedException, ExecutionException {
+        if (processor <= 0) {
             throw new IllegalArgumentException("Invalid number of processor!");
         }
-        int num = Integer.max(1, list.size()/processor);
+        int num = Integer.max(1, list.size() / processor);
         int index = 0;
         ExecutorService es = Executors.newFixedThreadPool(processor);
         int total = 0;
-        for(int i = 0; i < processor; i++){
+        for (int i = 0; i < processor; i++) {
             final List<String> tmp = new ArrayList();
-            for(int j = 0; j < num && index < list.size(); j++){
+            for (int j = 0; j < num && index < list.size(); j++) {
                 tmp.add(list.get(index++));
             }
-            if(i + 1 == processor){
-                while(index < list.size()){
+            if (i + 1 == processor) {
+                while (index < list.size()) {
                     tmp.add(list.get(index++));
                 }
             }
@@ -41,11 +42,11 @@ public class Chapter2 {
                 @Override
                 public Integer call() throws Exception {
                     int result = 0;
-                    for(String word : tmp){
-                        if(word.length() > 12){
+                    for (String word : tmp) {
+                        if (word.length() > 12) {
                             result++;
                         }
-                    }                    
+                    }
                     return result;
                 }
             };
@@ -55,8 +56,17 @@ public class Chapter2 {
         es.shutdown();
         return total;
     }
+
+    public long firstFiveLongWords(List<String> list) {
+        return list.stream().filter(w -> {
+            System.out.println(w);
+            return w.length() > 5;
+        }).limit(5).count();
+    }
+
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        List<String> list = Arrays.asList("TESTTESTTESdsadasdsadsaTTEST" , "abcdefghijkasdasdhlmn" , "aaaaaa");
-        System.out.println(new Chapter2().parallelForLoopWordCount(list, 2));
+        List<String> list = Arrays.asList("TESTTESTTESdsadasdsadsaTTEST", "abcdefghijkasdasdhlmn", "aaaaaa" ,  "cd" , "dergfdsg" , "dasgfgfdgfd", "dsavf" , "abc");
+       System.out.println( new Chapter2().firstFiveLongWords(list));
+
     }
 }
