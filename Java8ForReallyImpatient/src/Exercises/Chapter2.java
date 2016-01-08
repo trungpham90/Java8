@@ -5,6 +5,7 @@
  */
 package Exercises;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  *
@@ -58,15 +62,57 @@ public class Chapter2 {
     }
 
     public long firstFiveLongWords(List<String> list) {
-        return list.stream().filter(w -> {
-            System.out.println(w);
-            return w.length() > 5;
-        }).limit(5).count();
+        return list.stream().filter(w
+                -> w.length() > 5
+        ).limit(5).count();
+    }
+
+    public long firstFiveLongWordsParallel(List<String> list) {
+        return list.parallelStream().filter(w
+                -> w.length() > 5
+        ).limit(5).count();
+    }
+
+    public long countLongWords(List<String> list) {
+        return list.stream().filter(w
+                -> w.length() > 5
+        ).count();
+    }
+
+    public long countLongWordsParallel(List<String> list) {
+        return list.parallelStream().filter(w
+                -> w.length() > 5
+        ).count();
+    }
+
+    public Stream<BigInteger> generateIntegerStream() {
+        final long a = 25214903917L, c = 11, m = 1L << 48;
+        Stream<BigInteger> stream = Stream.iterate(BigInteger.ZERO, n -> n.multiply(BigInteger.valueOf(a)).add(BigInteger.valueOf(c)).mod(BigInteger.valueOf(m)));
+        return stream;
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        List<String> list = Arrays.asList("TESTTESTTESdsadasdsadsaTTEST", "abcdefghijkasdasdhlmn", "aaaaaa" ,  "cd" , "dergfdsg" , "dasgfgfdgfd", "dsavf" , "abc");
-       System.out.println( new Chapter2().firstFiveLongWords(list));
+        Stream<String> stream = Stream.generate(() -> {
+            int v = (int) (Math.random() * 10);
+            String result = "";
+            for (int i = 0; i < v; i++) {
+                result += 'a';
+            }
+            return result;
+        }).limit(100000);
+        List<String> list = stream.collect(Collectors.toList());
+        long start = System.nanoTime();
+        System.out.println(new Chapter2().countLongWords(list));
+        long end = System.nanoTime();
+        System.out.println((end - start));
+        start = System.nanoTime();
+        System.out.println(new Chapter2().countLongWordsParallel(list));
+        end = System.nanoTime();
+        System.out.println((end - start));
+
+        int[] values = {1, 4, 9, 16};
+        Stream<Object> test = Stream.of(values);
+        IntStream primitiveStream = IntStream.of(values);
 
     }
 }
