@@ -91,6 +91,10 @@ public class Chapter2 {
         return stream;
     }
 
+    public static Stream<Character> characterStream(String s) {
+        return IntStream.iterate(0, w -> w + 1).limit(s.length()).mapToObj(w -> s.charAt(w));
+    }
+
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         Stream<String> stream = Stream.generate(() -> {
             int v = (int) (Math.random() * 10);
@@ -113,6 +117,7 @@ public class Chapter2 {
         int[] values = {1, 4, 9, 16};
         Stream<Object> test = Stream.of(values);
         IntStream primitiveStream = IntStream.of(values);
-
+        Stream<Character> charStream = characterStream("Java 8");
+        charStream.forEach(w -> System.out.println(w));
     }
 }
