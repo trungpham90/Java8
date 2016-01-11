@@ -8,7 +8,9 @@ package Exercises;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -95,6 +97,54 @@ public class Chapter2 {
         return IntStream.iterate(0, w -> w + 1).limit(s.length()).mapToObj(w -> s.charAt(w));
     }
 
+    public static <T> Stream<T> zip(Stream<T> first, Stream<T> second) {
+        Iterator<T> it = second.iterator();
+        Stream.Builder<T> builder = Stream.builder();
+
+        first.forEach(w -> {
+            builder.add(w);
+            if (it.hasNext()) {
+                builder.add(it.next());
+            } else {
+                first.close();
+            }
+        });
+        return builder.build();
+    }
+
+    public static <T> ArrayList<T> joinOne(Stream<ArrayList<T>> stream) {
+
+        Optional<ArrayList<T>> result = stream.reduce((a, b) -> {
+            a.addAll(b);
+            return a;
+        });
+
+        return result.get();
+    }
+
+    public static <T> ArrayList<T> joinTwo(Stream<ArrayList<T>> stream) {
+        ArrayList<T> identity = new ArrayList();
+        ArrayList<T> result = stream.reduce(identity, (a, b) -> {
+            a.addAll(b);
+            return a;
+        });
+
+        return result;
+    }
+
+    public static <T> ArrayList<T> joinThree(Stream<ArrayList<T>> stream) {
+        ArrayList<T> identity = new ArrayList();
+        ArrayList<T> result = stream.reduce(identity, (a, b) -> {
+            a.addAll(b);
+            return a;
+        }, (a, b) -> {
+            a.addAll(b);
+            return a;
+        });
+
+        return result;
+    }
+
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         Stream<String> stream = Stream.generate(() -> {
             int v = (int) (Math.random() * 10);
@@ -119,5 +169,7 @@ public class Chapter2 {
         IntStream primitiveStream = IntStream.of(values);
         Stream<Character> charStream = characterStream("Java 8");
         charStream.forEach(w -> System.out.println(w));
+        Stream<Character> testZip = zip(characterStream("AAAA"), characterStream("BBB"));
+        testZip.forEach(w -> System.out.println(w));
     }
 }
