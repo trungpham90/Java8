@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -145,24 +146,78 @@ public class Chapter2 {
         return result;
     }
 
+    public static double average(Stream<Double> stream) {
+
+        return stream.reduce(new Average(), Average::accept, Average::combine).average();
+    }
+
+    static class Average {
+
+        int count;
+        double total;
+
+        Average() {
+            count = 0;
+            total = 0;
+        }
+
+        Average accept(Double val) {
+            count++;
+            total += val;
+            return this;
+        }
+
+        Average combine(Average other) {
+            count += other.count;
+            total += other.total;
+            return this;
+        }
+
+        double average() {
+            return total / count;
+        }
+
+    }
+
+    public static <T> ArrayList<T> merge(Stream<T> stream, int n) {
+        AtomicInteger index = new AtomicInteger(0);
+
+        ArrayList<T> result = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            result.add(null);
+        }
+        stream.parallel().forEach((a) -> {
+            int v = index.getAndIncrement();
+            result.set(v, a);
+        });
+        return result;
+    }
+
+    public static AtomicInteger[] countShortWord(Stream<String> stream, final int n) {
+        AtomicInteger[] count = new AtomicInteger[n];
+        for (int i = 0; i < n; i++) {
+            count[i] = new AtomicInteger(0);
+        }
+        stream.parallel().forEach(a -> {
+            System.out.println(a.length());
+            if (a.length() < n) {
+                
+                count[a.length()].getAndIncrement();
+            }
+        });
+        return count;
+    }
+
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         Stream<String> stream = Stream.generate(() -> {
-            int v = (int) (Math.random() * 10);
+            int v = (int) (Math.random() * 50);
             String result = "";
             for (int i = 0; i < v; i++) {
                 result += 'a';
             }
             return result;
-        }).limit(100000);
-        List<String> list = stream.collect(Collectors.toList());
-        long start = System.nanoTime();
-        System.out.println(new Chapter2().countLongWords(list));
-        long end = System.nanoTime();
-        System.out.println((end - start));
-        start = System.nanoTime();
-        System.out.println(new Chapter2().countLongWordsParallel(list));
-        end = System.nanoTime();
-        System.out.println((end - start));
+        }).limit(50);
+        
 
         int[] values = {1, 4, 9, 16};
         Stream<Object> test = Stream.of(values);
@@ -171,5 +226,15 @@ public class Chapter2 {
         charStream.forEach(w -> System.out.println(w));
         Stream<Character> testZip = zip(characterStream("AAAA"), characterStream("BBB"));
         testZip.forEach(w -> System.out.println(w));
+        Stream<ArrayList<Integer>> listStream = Stream.generate(() -> {
+            ArrayList<Integer> result = new ArrayList();
+            result.add((int) (Math.random() * 100));
+            return result;
+        }).limit(3);
+        System.out.println(joinThree(listStream));
+        System.out.println(average(Stream.of(5.0, 3.0, 4.0, 9.0)));
+        String testStream = "abcdefghijklmn";
+        System.out.println(merge(characterStream(testStream), testStream.length()));
+        System.out.println(Arrays.toString(countShortWord(stream, 12)));
     }
 }
