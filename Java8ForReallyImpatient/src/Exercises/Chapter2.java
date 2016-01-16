@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -201,11 +202,17 @@ public class Chapter2 {
         stream.parallel().forEach(a -> {
             System.out.println(a.length());
             if (a.length() < n) {
-                
+
                 count[a.length()].getAndIncrement();
             }
         });
         return count;
+    }
+
+    public static Map<Integer, Long> countLongWord(Stream<String> stream, final int n) {
+
+        Map<Integer, Long> map = stream.parallel().filter(w -> w.length() >= n).collect(Collectors.groupingBy(String::length, Collectors.counting()));
+        return map;
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
@@ -217,7 +224,6 @@ public class Chapter2 {
             }
             return result;
         }).limit(50);
-        
 
         int[] values = {1, 4, 9, 16};
         Stream<Object> test = Stream.of(values);
@@ -235,6 +241,7 @@ public class Chapter2 {
         System.out.println(average(Stream.of(5.0, 3.0, 4.0, 9.0)));
         String testStream = "abcdefghijklmn";
         System.out.println(merge(characterStream(testStream), testStream.length()));
-        System.out.println(Arrays.toString(countShortWord(stream, 12)));
+       // System.out.println(Arrays.toString(countShortWord(stream, 12)));
+        System.out.println(countLongWord(stream, 12));
     }
 }
