@@ -5,7 +5,9 @@
  */
 package Exercises;
 
+import java.util.Comparator;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
@@ -26,6 +28,18 @@ public class Chapter3 {
                 log.log(level, msg.get());
             }
         }
+    }
+
+    static <T> Image transform(Image in, BiFunction<Color, T, Color> f, T arg) {
+        int width = (int) in.getWidth();
+        int height = (int) in.getHeight();
+        WritableImage out = new WritableImage(width, height);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                out.getPixelWriter().setColor(x, y, f.apply(in.getPixelReader().getColor(x, y), arg));
+            }
+        }
+        return out;
     }
 
     static void withLock(ReentrantLock myLock, Runnable action) {
@@ -53,6 +67,25 @@ public class Chapter3 {
         return out;
     }
 
+    public static Comparator<String> getComparator(boolean normal, boolean caseSensitive, boolean spaceSensitive) {
+        return (a, b) -> {
+            if (!normal) {
+                StringBuilder builder = new StringBuilder(a);
+                a = builder.reverse().toString();
+            }
+            if (!caseSensitive) {
+                a = a.toLowerCase();
+                b = b.toLowerCase();
+            }
+            if (!spaceSensitive) {
+                a = a.replaceAll("\\s+", "");
+                b = b.replaceAll("\\s+", "");
+            }
+            return a.compareTo(b);
+
+        };
+    }
+
     @FunctionalInterface
     public interface ColorTransformer {
 
@@ -65,7 +98,7 @@ public class Chapter3 {
         logIf(Logger.getGlobal(), Level.WARNING, () -> true, () -> "HE HE");
         withLock(new ReentrantLock(), () -> System.out.println("LOCK!"));
         transform(null, (c) -> Color.GRAY);
-
+        System.out.println(getComparator(false, false, false).compare("eH     Eh    ", "he  he"));
     }
 
 }
