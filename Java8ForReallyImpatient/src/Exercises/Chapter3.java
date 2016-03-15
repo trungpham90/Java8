@@ -5,6 +5,7 @@
  */
 package Exercises;
 
+import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -67,6 +68,21 @@ public class Chapter3 {
         return out;
     }
 
+    public static Image transform(Image in, int thickness, ColorTransformer f) {
+        int width = (int) in.getWidth();
+        int height = (int) in.getHeight();
+        WritableImage out = new WritableImage(width, height);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (x < thickness || y < thickness || (width - x) <= thickness || (height - y) <= thickness) {
+                    out.getPixelWriter().setColor(x, y,
+                            f.apply(in.getPixelReader().getColor(x, y)));
+                }
+            }
+        }
+        return out;
+    }
+
     public static Comparator<String> getComparator(boolean normal, boolean caseSensitive, boolean spaceSensitive) {
         return (a, b) -> {
             if (!normal) {
@@ -82,6 +98,27 @@ public class Chapter3 {
                 b = b.replaceAll("\\s+", "");
             }
             return a.compareTo(b);
+
+        };
+    }
+
+    public <T> Comparator<T> lexicographicComparator(String... fields) {
+        return (a, b) -> {
+
+            for (String field : fields) {
+                try {
+                    Field tmp = a.getClass().getDeclaredField(field);
+                    tmp.setAccessible(true);
+                    String x = tmp.get(a).toString();
+                    String y = tmp.get(b).toString();
+                    if (x.compareTo(y) != 0) {
+                        return x.compareTo(y);
+                    }
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                    Logger.getLogger(Chapter3.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            return 0;
 
         };
     }
